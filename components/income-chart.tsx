@@ -10,6 +10,7 @@ interface IncomeChartProps {
 }
 
 export function IncomeChart({ data }: IncomeChartProps) {
+  console.log("IncomeChart data:", data)
   const chartData = data.map((item) => ({
     name: getCategoryLabel(item.category),
     value: item.amount,
@@ -43,7 +44,7 @@ export function IncomeChart({ data }: IncomeChartProps) {
                 cursor={{ fill: "hsl(var(--accent))", opacity: 0.1 }}
               />
               <Legend />
-              <Bar dataKey="value" fill="#22c55e" radius={[8, 8, 0, 0]} animationBegin={0} animationDuration={800} />
+              <Bar dataKey="value" fill="#FFFF" radius={[8, 8, 0, 0]} animationBegin={0} animationDuration={800} />
             </BarChart>
           </ResponsiveContainer>
         ) : (

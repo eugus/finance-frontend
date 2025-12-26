@@ -17,12 +17,11 @@ export function calculateCategoryStats(transactions: Transaction[], type: "incom
   const filtered = transactions.filter((t) => t.type === type)
   const total = filtered.reduce((sum, t) => sum + t.amount, 0)
 
-  const categoryMap = new Map<TransactionCategory, number>()
+  const categoryMap = new Map<string, number>()
 
   filtered.forEach((t) => {
-    const cat = t.category as TransactionCategory
-    const current = categoryMap.get(cat) || 0
-    categoryMap.set(cat, current + t.amount)
+    const current = categoryMap.get(t.category) || 0
+    categoryMap.set(t.category, current + t.amount)
   })
 
   return Array.from(categoryMap.entries())
@@ -41,7 +40,7 @@ export function formatCurrency(amount: number): string {
   }).format(amount)
 }
 
-export function getCategoryLabel(category: TransactionCategory): string {
+export function getCategoryLabel(category: TransactionCategory | string): string {
   const labels: Record<TransactionCategory, string> = {
     salary: "Salário",
     freelance: "Freelance",
@@ -57,10 +56,11 @@ export function getCategoryLabel(category: TransactionCategory): string {
     bills: "Contas",
     "other-expense": "Outras Despesas",
   }
-  return labels[category]
+  // Se for uma categoria padrão, retorna o label, senão retorna a própria string
+  return labels[category as TransactionCategory] || category
 }
 
-export function getCategoryColor(category: TransactionCategory): string {
+export function getCategoryColor(category: TransactionCategory | string): string {
   const colors: Record<TransactionCategory, string> = {
     salary: "#10b981",
     freelance: "#14b8a6",
@@ -76,7 +76,8 @@ export function getCategoryColor(category: TransactionCategory): string {
     bills: "#f43f5e",
     "other-expense": "#64748b",
   }
-  return colors[category]
+  // Se for uma categoria padrão, retorna a cor, senão retorna uma cor padrão
+  return colors[category as TransactionCategory] || "#64748b"
 }
 
 export function filterTransactionsByMonth(transactions: Transaction[], date: Date): Transaction[] {
