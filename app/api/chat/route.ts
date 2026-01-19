@@ -1,25 +1,29 @@
-import { convertToModelMessages, streamText, type UIMessage } from "ai"
-import { google } from "@ai-sdk/google"
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge"
-export const maxDuration = 30
+export async function POST(request: NextRequest) {
+    try {
+        const body = await request.json();
+        // Aceita 'prompt' (o que seu front envia hoje) ou 'messages'
+        const prompt = body.prompt || (body.messages && body.messages[body.messages.length - 1].content);
 
-export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json()
+        if (!prompt) {
+            return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+        }
 
-  const systemPrompt = `
-Você é um assistente financeiro especializado...
-  `.trim()
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-  const prompt = convertToModelMessages(messages)
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
 
-const result = streamText({
-  model: google("models/gemini-1.5-flash"),
-  system: systemPrompt,
-  messages: prompt,
-  temperature: 0.7,
-  maxOutputTokens: 2000,   // ✅ nome correto
-})
+        // IMPORTANTE: Retorne um objeto que o seu front entenda
+        // O seu front busca por 'data.content', então vamos enviar 'content'
+        return NextResponse.json({ content: text }, { status: 200 });
 
-  return result.toUIMessageStreamResponse()
+    } catch (error: any) {
+        console.error("Erro na API Gemini:", error);
+        return NextResponse.json({ error: "Erro interno no servidor" }, { status: 500 });
+    }
 }

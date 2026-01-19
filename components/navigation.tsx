@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Receipt, MessageSquare, ShoppingBag, LogOut } from "lucide-react"
+import { LayoutDashboard, Receipt, MessageSquare, ShoppingBag, LogOut, CalendarDays } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useEffect, useState } from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -61,6 +61,7 @@ export function Navigation() {
   const links = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/transactions", label: "Transações", icon: Receipt },
+    { href: "/fixed-expenses", label: "Despesas Fixas", icon: CalendarDays },
     { href: "/future-purchases", label: "Compras Futuras", icon: ShoppingBag },
     { href: "/chat", label: "Assistente IA", icon: MessageSquare },
   ]

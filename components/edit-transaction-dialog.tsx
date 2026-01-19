@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Pencil } from "lucide-react"
 import type { Transaction, TransactionType, TransactionCategory } from "@/lib/types"
-import { getCategoryLabel } from "@/lib/finance-utils"
+import { getCategoryLabel, formatDateToInput } from "@/lib/finance-utils"
 
 interface EditTransactionDialogProps {
   transaction: Transaction
@@ -43,17 +43,21 @@ export function EditTransactionDialog({ transaction, onUpdate }: EditTransaction
 
   const [type, setType] = useState<TransactionType>(transaction.type)
   const [amount, setAmount] = useState(transaction.amount.toString())
-  const [category, setCategory] = useState<TransactionCategory | string>(transaction.category)
+  const [category, setCategory] = useState<TransactionCategory>(transaction.category as TransactionCategory)
   const [description, setDescription] = useState(transaction.description)
-  const [date, setDate] = useState(new Date(transaction.date).toISOString().split("T")[0])
+  const [date, setDate] = useState(formatDateToInput(transaction.date))
+  const [currentInstallment, setCurrentInstallment] = useState(
+    transaction.currentInstallment || transaction.current_installment || 1,
+  )
 
   useEffect(() => {
     if (open) {
       setType(transaction.type)
       setAmount(transaction.amount.toString())
-      setCategory(transaction.category)
+      setCategory(transaction.category as TransactionCategory)
       setDescription(transaction.description)
-      setDate(new Date(transaction.date).toISOString().split("T")[0])
+      setDate(formatDateToInput(transaction.date))
+      setCurrentInstallment(transaction.currentInstallment || transaction.current_installment || 1)
     }
   }, [open, transaction])
 
@@ -68,6 +72,7 @@ export function EditTransactionDialog({ transaction, onUpdate }: EditTransaction
         category,
         description,
         date: new Date(date).toISOString(),
+        currentInstallment: currentInstallment,
       })
       setOpen(false)
     } catch (error) {
@@ -150,6 +155,27 @@ export function EditTransactionDialog({ transaction, onUpdate }: EditTransaction
             <Label htmlFor="date">Data</Label>
             <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
           </div>
+
+          {(transaction.isCredit || transaction.is_credit) && transaction.installments && (
+            <div className="space-y-2">
+              <Label htmlFor="currentInstallment">Parcela Atual</Label>
+              <Select
+                value={currentInstallment.toString()}
+                onValueChange={(v) => setCurrentInstallment(Number.parseInt(v))}
+              >
+                <SelectTrigger id="currentInstallment">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: transaction.installments }, (_, i) => i + 1).map((num) => (
+                    <SelectItem key={num} value={num.toString()}>
+                      Parcela {num} de {transaction.installments}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="flex gap-2">
             <Button type="submit" className="flex-1" disabled={isLoading}>

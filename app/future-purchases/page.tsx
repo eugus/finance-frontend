@@ -11,13 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { PriorityBadge } from "@/components/priority-bagde" // Corrigindo import do PriorityBadge
 import { CategoryBadge } from "@/components/category-badge"
-import { Plus, Trash2, Check, ShoppingBag } from "lucide-react"
+import { Plus, Trash2, Check, ShoppingBag, ArrowLeft } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import type { FuturePurchase, PurchasePriority, TransactionCategory } from "@/lib/types"
-import { formatCurrency, getCategoryLabel } from "@/lib/finance-utils"
-import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
+import { formatCurrency, getCategoryLabel, formatDateForDisplay } from "@/lib/finance-utils"
 import { EditPurchaseDialog } from "@/components/edit-purchase-dialog" // Importar dialog de edição
+import { useRouter } from "next/navigation"
+import { ptBR } from "date-fns/locale"
 
 const categories: TransactionCategory[] = [
   "food",
@@ -32,6 +32,7 @@ const categories: TransactionCategory[] = [
 ]
 
 export default function FuturePurchasesPage() {
+  const router = useRouter()
   const [purchases, setPurchases] = useState<FuturePurchase[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -202,6 +203,15 @@ export default function FuturePurchasesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950">
       <div className="container mx-auto px-6 py-8">
+        <Button
+          onClick={() => router.push("/")}
+          variant="ghost"
+          className="mb-4 gap-2 hover:bg-purple-100 dark:hover:bg-purple-900"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar ao Dashboard
+        </Button>
+
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -447,7 +457,7 @@ export default function FuturePurchasesPage() {
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">Data Alvo:</span>
                         <span className="text-sm font-medium">
-                          {format(new Date(purchase.targetDate), "dd/MM/yyyy", { locale: ptBR })}
+                          {formatDateForDisplay(purchase.targetDate, ptBR)}
                         </span>
                       </div>
                     )}

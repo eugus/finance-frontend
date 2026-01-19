@@ -37,6 +37,8 @@ export interface FuturePurchase {
   completed: boolean
 }
 
+export type ExpenseType = "normal" | "fixed" | "installment"
+
 export interface Transaction {
   id: string
   type: TransactionType
@@ -44,6 +46,10 @@ export interface Transaction {
   amount: number
   description: string
   date: string
+  due_date?: string
+  is_paid?: boolean
+  paid_at?: string
+  expense_type?: ExpenseType
   createdAt?: string
   created_at?: string
   // Campos de parcelamento

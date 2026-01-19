@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Pencil } from "lucide-react"
 import type { FuturePurchase, PurchasePriority, TransactionCategory } from "@/lib/types"
-import { getCategoryLabel } from "@/lib/finance-utils"
+import { getCategoryLabel, formatDateToInput } from "@/lib/finance-utils"
 
 interface EditPurchaseDialogProps {
   purchase: FuturePurchase
@@ -45,9 +45,9 @@ export function EditPurchaseDialog({ purchase, onUpdate }: EditPurchaseDialogPro
   const [description, setDescription] = useState(purchase.description || "")
   const [estimatedPrice, setEstimatedPrice] = useState(purchase.estimatedPrice.toString())
   const [priority, setPriority] = useState<PurchasePriority>(purchase.priority)
-  const [category, setCategory] = useState<TransactionCategory>(purchase.category)
+  const [category, setCategory] = useState<TransactionCategory | string>(purchase.category as TransactionCategory | string)
   const [targetDate, setTargetDate] = useState(
-    purchase.targetDate ? new Date(purchase.targetDate).toISOString().split("T")[0] : "",
+    purchase.targetDate ? formatDateToInput(purchase.targetDate) : "",
   )
 
   useEffect(() => {
@@ -56,8 +56,8 @@ export function EditPurchaseDialog({ purchase, onUpdate }: EditPurchaseDialogPro
       setDescription(purchase.description || "")
       setEstimatedPrice(purchase.estimatedPrice.toString())
       setPriority(purchase.priority)
-      setCategory(purchase.category)
-      setTargetDate(purchase.targetDate ? new Date(purchase.targetDate).toISOString().split("T")[0] : "")
+      setCategory(purchase.category as TransactionCategory | string)
+      setTargetDate(purchase.targetDate ? formatDateToInput(purchase.targetDate) : "")
     }
   }, [open, purchase])
 

@@ -9,10 +9,12 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useFinanceStore } from "@/lib/finance-store"
 import { getCategoryLabel } from "@/lib/finance-utils"
-import type { TransactionType, TransactionCategory } from "@/lib/types"
+import { createClient } from "@/lib/supabase-client"
+import { formatCurrency } from "@/lib/utils"
+import type { TransactionType, TransactionCategory, ExpenseType } from "@/lib/types"
 
 const incomeCategories: TransactionCategory[] = ["salary", "freelance", "investment", "other-income"]
 const expenseCategories: TransactionCategory[] = [
@@ -34,10 +36,14 @@ export function TransactionForm() {
   const [amount, setAmount] = useState("")
   const [description, setDescription] = useState("")
   const [date, setDate] = useState(new Date().toISOString().split("T")[0])
-  const [isCredit, setIsCredit] = useState(false)
+  const [expenseType, setExpenseType] = useState<ExpenseType>("normal")
+  const [dueDate, setDueDate] = useState(new Date().toISOString().split("T")[0])
   const [creditCard, setCreditCard] = useState("")
   const [installments, setInstallments] = useState("1")
+  const [currentInstallment, setCurrentInstallment] = useState("1")
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const installmentValue = amount && installments ? Number.parseFloat(amount) / Number.parseInt(installments) : 0
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,31 +52,65 @@ export function TransactionForm() {
       return
     }
 
-    if (isCredit && (!creditCard || Number.parseInt(installments) < 1)) {
+    if (type === "expense" && expenseType === "installment" && (!creditCard || Number.parseInt(installments) < 1)) {
+      alert("Preencha o cartão e número de parcelas para lançamento parcelado")
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      await addTransaction({
-        type,
-        category,
-        amount: Number.parseFloat(amount),
-        description,
-        date,
-        isCredit: type === "expense" ? isCredit : false,
-        creditCard: isCredit ? creditCard : undefined,
-        installments: isCredit ? Number.parseInt(installments) : undefined,
-      })
+      // Despesas fixas vão para fixed_expenses
+      if (type === "expense" && expenseType === "fixed") {
+        // Salvar como despesa fixa
+        const supabase = createClient()
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+
+        if (!user) {
+          alert("Você precisa estar logado.")
+          return
+        }
+
+        const { error } = await supabase.from("fixed_expenses").insert({
+          user_id: user.id,
+          name: description,
+          description: description,
+          amount: Number.parseFloat(amount),
+          category,
+          day_of_month: new Date(dueDate).getDate(),
+          is_active: true,
+          total_installments: Number.parseInt(installments) || 1,
+        })
+
+        if (error) throw error
+      } else {
+        await addTransaction({
+          type,
+          category,
+          amount: Number.parseFloat(amount),
+          description,
+          date,
+          due_date: type === "expense" ? dueDate : undefined,
+          expense_type: type === "expense" ? expenseType : undefined,
+          is_paid: false,
+          isCredit: expenseType === "installment",
+          creditCard: expenseType === "installment" ? creditCard : undefined,
+          installments: expenseType === "installment" ? Number.parseInt(installments) : undefined,
+          currentInstallment: expenseType === "installment" ? Number.parseInt(currentInstallment) : undefined,
+        })
+      }
 
       // Reset form
       setAmount("")
       setDescription("")
       setDate(new Date().toISOString().split("T")[0])
-      setIsCredit(false)
+      setDueDate(new Date().toISOString().split("T")[0])
+      setExpenseType("normal")
       setCreditCard("")
       setInstallments("1")
+      setCurrentInstallment("1")
     } catch (error) {
       console.error("Erro ao adicionar transação:", error)
       alert("Erro ao adicionar transação. Tente novamente.")
@@ -82,7 +122,7 @@ export function TransactionForm() {
   const categories = type === "income" ? incomeCategories : expenseCategories
 
   return (
-    <Card className="border-none shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-24">
+    <Card className="border-none shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-6">
       <CardHeader>
         <CardTitle className="text-2xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
           Nova Transação
@@ -95,9 +135,10 @@ export function TransactionForm() {
             onValueChange={(v) => {
               setType(v as TransactionType)
               if (v === "income") {
-                setIsCredit(false)
+                setExpenseType("normal")
                 setCreditCard("")
                 setInstallments("1")
+                setCurrentInstallment("1")
               }
             }}
           >
@@ -164,49 +205,97 @@ export function TransactionForm() {
           </div>
 
           {type === "expense" && (
-            <div className="space-y-4 pt-4 border-t">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="isCredit"
-                  checked={isCredit}
-                  onCheckedChange={(checked) => setIsCredit(checked as boolean)}
-                />
-                <Label htmlFor="isCredit" className="cursor-pointer">
-                  Pagamento no crédito
-                </Label>
+            <>
+              <div className="space-y-3 pt-4 border-t">
+                <Label>Tipo de Parcelamento</Label>
+                <RadioGroup value={expenseType} onValueChange={(v) => setExpenseType(v as ExpenseType)}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fixed" id="fixed" />
+                    <Label htmlFor="fixed" className="cursor-pointer font-normal">
+                      Despesa Fixa
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="installment" id="installment" />
+                    <Label htmlFor="installment" className="cursor-pointer font-normal">
+                      Lançamento Parcelado
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="normal" id="normal" />
+                    <Label htmlFor="normal" className="cursor-pointer font-normal">
+                      Lançamento Normal
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
 
-              {isCredit && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="creditCard">Nome do Cartão</Label>
-                    <Input
-                      id="creditCard"
-                      placeholder="Ex: Nubank, Itaú, Bradesco"
-                      value={creditCard}
-                      onChange={(e) => setCreditCard(e.target.value)}
-                      required={isCredit}
-                    />
+              <div className="space-y-2">
+                <Label htmlFor="dueDate">Data de Vencimento</Label>
+                <Input id="dueDate" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} required />
+              </div>
+
+              {(expenseType === "installment" || expenseType === "fixed") && (
+                <div className="space-y-4 pt-2">
+                  {expenseType === "installment" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="creditCard">Nome do Cartão</Label>
+                      <Input
+                        id="creditCard"
+                        placeholder="Ex: Nubank, Itaú, Bradesco"
+                        value={creditCard}
+                        onChange={(e) => setCreditCard(e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="installments">{expenseType === "fixed" ? "Meses" : "Quantidade"}</Label>
+                      <Select value={installments} onValueChange={setInstallments}>
+                        <SelectTrigger id="installments">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 24 }, (_, i) => i + 1).map((num) => (
+                            <SelectItem key={num} value={num.toString()}>
+                              {num} meses
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {expenseType === "installment" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="currentInstallment">Parcela Atual</Label>
+                        <Select value={currentInstallment} onValueChange={setCurrentInstallment}>
+                          <SelectTrigger id="currentInstallment">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: Number.parseInt(installments) || 1 }, (_, i) => i + 1).map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num}ª parcela
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="installments">Número de Parcelas</Label>
-                    <Select value={installments} onValueChange={setInstallments}>
-                      <SelectTrigger id="installments">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 12 }, (_, i) => i + 1).map((num) => (
-                          <SelectItem key={num} value={num.toString()}>
-                            {num}x de {amount ? `R$ ${(Number.parseFloat(amount) / num).toFixed(2)}` : "R$ 0,00"}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
+                  {installmentValue > 0 && (
+                    <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm text-blue-600 dark:text-blue-400">
+                        <strong>Valor por parcela:</strong> {formatCurrency(installmentValue)}
+                      </p>
+                    </div>
+                  )}
+                </div>
               )}
-            </div>
+            </>
           )}
 
           <Button

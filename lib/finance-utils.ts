@@ -87,6 +87,44 @@ export function filterTransactionsByMonth(transactions: Transaction[], date: Dat
   })
 }
 
+export function getCardBillingCycle(date: Date, billingDay: number): { startDate: Date; endDate: Date } {
+  // Se o dia de vencimento já passou neste mês, o ciclo é até este mês
+  // Caso contrário, o ciclo anterior já começou
+  const currentDay = date.getDate()
+  const currentMonth = date.getMonth()
+  const currentYear = date.getFullYear()
+
+  let cycleStartDate: Date
+  let cycleEndDate: Date
+
+  if (currentDay >= billingDay) {
+    // O ciclo atual começou no billingDay deste mês
+    cycleStartDate = new Date(currentYear, currentMonth, billingDay)
+    // O ciclo termina um dia antes do billingDay do próximo mês
+    cycleEndDate = new Date(currentYear, currentMonth + 1, billingDay - 1)
+  } else {
+    // O ciclo atual começou no billingDay do mês anterior
+    cycleStartDate = new Date(currentYear, currentMonth - 1, billingDay)
+    // O ciclo termina um dia antes do billingDay deste mês
+    cycleEndDate = new Date(currentYear, currentMonth, billingDay - 1)
+  }
+
+  return { startDate: cycleStartDate, endDate: cycleEndDate }
+}
+
+export function filterTransactionsByCardCycle(
+  transactions: Transaction[],
+  date: Date,
+  billingDay: number,
+): Transaction[] {
+  const { startDate, endDate } = getCardBillingCycle(date, billingDay)
+
+  return transactions.filter((t) => {
+    const tDate = new Date(t.date)
+    return tDate >= startDate && tDate <= endDate
+  })
+}
+
 export function getPriorityColor(priority: PurchasePriority): string {
   const colors: Record<PurchasePriority, string> = {
     low: "#10b981",
@@ -105,4 +143,39 @@ export function getPriorityLabel(priority: PurchasePriority): string {
     urgent: "Urgente",
   }
   return labels[priority]
+}
+
+/**
+ * Converte uma data ISO (YYYY-MM-DD) para o formato de input date sem problemas de timezone
+ * @param isoDate Data no formato ISO (ex: "2026-01-20")
+ * @returns Data formatada para input type="date"
+ */
+export function formatDateToInput(isoDate: string): string {
+  if (!isoDate) return ""
+  // Se for apenas a data (YYYY-MM-DD), retorna como está
+  if (isoDate.length === 10) {
+    return isoDate
+  }
+  // Se for ISO completo, extrai apenas a data
+  return isoDate.split("T")[0]
+}
+
+/**
+ * Formata uma data de string para exibição, evitando problemas de timezone
+ * @param dateString Data como string (ISO format ou YYYY-MM-DD)
+ * @param locale Locale para formatação
+ * @returns Data formatada para exibição
+ */
+export function formatDateForDisplay(dateString: string, locale: any): string {
+  if (!dateString) return ""
+  // Adiciona T00:00:00 para garantir que a data não sofra ajustes de timezone
+  const dateWithTime = dateString.includes("T") ? dateString : `${dateString}T00:00:00`
+  const date = new Date(dateWithTime)
+
+  // Use Intl.DateTimeFormat para evitar problemas de timezone
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date)
 }

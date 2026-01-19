@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { Navigation } from "@/components/navigation"
+import { Sidebar } from "@/components/sidebar"
 import { usePathname } from "next/navigation"
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -13,12 +13,10 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     pathname === "/auth/sign-up" ||
     pathname === "/auth/sign-up-success"
 
-  console.log("[v0] Current pathname:", pathname, "isAuthPage:", isAuthPage)
-
   return (
     <>
-      {!isAuthPage && <Navigation />}
-      {children}
+      {!isAuthPage && <Sidebar />}
+      <div className={!isAuthPage ? "ml-64" : ""}>{children}</div>
     </>
   )
 }

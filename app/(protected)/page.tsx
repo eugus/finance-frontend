@@ -141,6 +141,12 @@ export default function DashboardPage() {
                 description="Total de despesas"
               />
               <StatsCard
+                title="Despesas do Mês"
+                value={formatCurrency(stats.totalExpenses)}
+                icon={Receipt}
+                description="Apenas despesas"
+              />
+              <StatsCard
                 title="Saldo"
                 value={formatCurrency(stats.balance)}
                 icon={Wallet}
