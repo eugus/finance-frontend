@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   const isPublicRoute =
-    pathname === "/" ||
+    pathname === "/dashboard" ||
     pathname.startsWith("/auth/login") ||
     pathname.startsWith("/auth/register")
 
@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
 
   if (session && pathname.startsWith("/auth")) {
     return NextResponse.redirect(
-      new URL("/", request.url)
+      new URL("/dashboard", request.url)
     )
   }
 
