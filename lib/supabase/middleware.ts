@@ -27,11 +27,10 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  const publicRoutes = ["/", "/auth/login", "/auth/register"]
-
-  const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route)
-  )
+  const isPublicRoute =
+    pathname === "/" ||
+    pathname.startsWith("/auth/login") ||
+    pathname.startsWith("/auth/register")
 
   if (!session && !isPublicRoute) {
     return NextResponse.redirect(
