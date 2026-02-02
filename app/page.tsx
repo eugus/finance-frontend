@@ -1,5 +1,5 @@
-import Page from "./auth/login/page";
+import { redirect } from "next/navigation";
 
-export default function Login() {
-    return <Page />;
+export default function Page() {
+  redirect("/auth/login");
 }
