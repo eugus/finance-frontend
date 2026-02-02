@@ -47,7 +47,7 @@ export default function ChatPage() {
       })
       const data = await response.json()
       if (data.error) throw new Error(data.error)
-      
+
       setMessages((prev) => [...prev, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
@@ -66,12 +66,12 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-[#f8fafc] dark:bg-[#020617] text-slate-900 dark:text-slate-100 overflow-hidden">
-      
+
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex w-72 flex-col border-r border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl p-6">
-        <Button 
-          onClick={() => router.push("/")}
-          variant="ghost" 
+        <Button
+          onClick={() => router.push("/dashboard")}
+          variant="ghost"
           className="mb-8 justify-start gap-2 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all"
         >
           <ArrowLeft className="h-4 w-4" /> Voltar ao Início
@@ -102,7 +102,7 @@ export default function ChatPage() {
 
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col relative h-full">
-        
+
         {/* Header Fixo */}
         <header className="h-20 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex items-center justify-between px-8 z-10">
           <div className="flex items-center gap-4">
@@ -141,11 +141,11 @@ export default function ChatPage() {
                         {message.role === "user" ? <User size={16} /> : <Bot size={16} />}
                       </AvatarFallback>
                     </Avatar>
-                    
+
                     <div className={`
                       p-4 rounded-2xl text-sm leading-relaxed shadow-sm break-words overflow-hidden
-                      ${message.role === "user" 
-                        ? "bg-indigo-600 text-white rounded-tr-none shadow-indigo-200 dark:shadow-none" 
+                      ${message.role === "user"
+                        ? "bg-indigo-600 text-white rounded-tr-none shadow-indigo-200 dark:shadow-none"
                         : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-tl-none text-slate-800 dark:text-slate-200"}
                     `}>
                       <p className="whitespace-pre-wrap">{message.content}</p>
@@ -153,7 +153,7 @@ export default function ChatPage() {
                   </div>
                 </div>
               ))}
-              
+
               {isLoading && (
                 <div className="flex justify-start gap-3">
                   <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse flex items-center justify-center">
@@ -162,7 +162,7 @@ export default function ChatPage() {
                   <div className="h-10 w-24 bg-slate-200 dark:bg-slate-800 animate-pulse rounded-2xl rounded-tl-none" />
                 </div>
               )}
-              
+
               {/* Espaçador final para o scroll */}
               <div ref={messagesEndRef} className="h-4" />
             </div>
@@ -171,7 +171,7 @@ export default function ChatPage() {
 
         {/* Input Área Fixo no Rodapé */}
         <footer className="p-6 bg-white dark:bg-[#020617] border-t border-slate-200 dark:border-slate-800">
-          <form 
+          <form
             onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}
             className="max-w-3xl mx-auto relative group"
           >
@@ -181,8 +181,8 @@ export default function ChatPage() {
               placeholder="Pergunte qualquer coisa sobre finanças..."
               className="h-14 pl-6 pr-16 rounded-2xl bg-slate-100 dark:bg-slate-900 border-none focus-visible:ring-2 focus-visible:ring-indigo-500 transition-all"
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isLoading || !input.trim()}
               className="absolute right-2 top-2 h-10 w-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/30 transition-all hover:scale-105"
             >

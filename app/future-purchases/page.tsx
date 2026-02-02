@@ -204,7 +204,7 @@ export default function FuturePurchasesPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950">
       <div className="container mx-auto px-6 py-8">
         <Button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/dashboard")}
           variant="ghost"
           className="mb-4 gap-2 hover:bg-purple-100 dark:hover:bg-purple-900"
         >

@@ -220,7 +220,7 @@ export default function FixedExpensesPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-950 dark:via-indigo-950 dark:to-slate-950">
       <div className="container mx-auto px-6 py-8">
         <Button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/dashboard")}
           variant="ghost"
           className="mb-4 gap-2 hover:bg-blue-100 dark:hover:bg-blue-900"
         >

@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { profile } from "console"
 
 export function Navigation() {
   const pathname = usePathname()
@@ -59,7 +60,7 @@ export function Navigation() {
   }
 
   const links = [
-    { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/transactions", label: "Transações", icon: Receipt },
     { href: "/fixed-expenses", label: "Despesas Fixas", icon: CalendarDays },
     { href: "/future-purchases", label: "Compras Futuras", icon: ShoppingBag },
@@ -110,7 +111,7 @@ export function Navigation() {
                   <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">{userName || "Minha Conta"}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{profile.name}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />

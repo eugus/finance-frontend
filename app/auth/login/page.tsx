@@ -30,7 +30,7 @@ export default function Page() {
         password,
       })
       if (error) throw error
-      router.push("/")
+      router.push("/dashboard")
       router.refresh()
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Ocorreu um erro")

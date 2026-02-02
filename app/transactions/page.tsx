@@ -39,7 +39,7 @@ export default function TransactionsPage() {
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-4">
-            <Link href="/">
+            <Link href="/dashboard">
               <Button variant="ghost" size="icon" className="hover:bg-white/80 dark:hover:bg-slate-800/80">
                 <ArrowLeft className="h-5 w-5" />
               </Button>

@@ -57,7 +57,7 @@ export function Sidebar() {
   }
 
   const links = [
-    { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/transactions", label: "Transações", icon: Receipt },
     { href: "/fixed-expenses", label: "Despesas Fixas", icon: CalendarDays },
     { href: "/future-purchases", label: "Compras Futuras", icon: ShoppingBag },
