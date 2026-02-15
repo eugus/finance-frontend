@@ -172,7 +172,7 @@ export default function FixedExpensesPage() {
       await fetchExpenses()
     } catch (error) {
       console.error("Erro ao salvar despesa fixa:", error)
-      alert("Erro ao salvar despesa fixa. Tente novamente.")
+      //alert("Erro ao salvar despesa fixa. Tente novamente.")
     }
   }
 
